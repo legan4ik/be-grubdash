@@ -6,9 +6,6 @@ const orders = require(path.resolve("src/data/orders-data"));
 // Use this function to assigh ID's when necessary
 const nextId = require("../utils/nextId");
 
-// TODO: Implement the /orders handlers needed to make the tests pass
-
-
 exports.orderExists = (req, res, next) => {
     const orderId = req.params.orderId;
     const order = orders.filter((order) => order.id === orderId);
@@ -19,13 +16,6 @@ exports.orderExists = (req, res, next) => {
         next({status: 404, message: `Order does not exist: ${orderId}`});
     }
 };
-
-
-function validateDishes(dishes){
-    const invalidDishes = dishes.filter((dish) => (!dish.quantity || dish.quantity === 0 || typeof dish.quantity !== 'number'));
-    return invalidDishes.length === 0;
-}
-
 
 exports.validate = (req, res, next) => {
     if (!req.body.data.deliverTo) {
@@ -40,17 +30,6 @@ exports.validate = (req, res, next) => {
     const invalidDishes = req.body.data.dishes.filter((dish) => (!dish.quantity || dish.quantity === 0 || typeof dish.quantity !== 'number'));
     if (invalidDishes.length !== 0){
         next({status: 400, message: JSON.stringify(req.body.data.dishes)});
-        //console.log(invalidDishes);
-        //if (!invalidDishes[0].quantity){
-        //    next({status: 400, message: '1 quantity is missing'});
-        //} else {
-        //    next({status: 400, message: `quantity ${invalidDishes[0].quantity}`});
-        //}
-    }
-
-        //if (!req.body.data.quantity || req.body.data.quantity <= 0 || typeof req.body.data.quantity !== 'number') {
-        //    next({status: 400, message: "price"});
-        //}
     next();
 };
 
@@ -70,14 +49,11 @@ exports.create = (req, res, next) => {
 };
 
 exports.read = (req, res, next) => {
-    //console.log(dish);
     res.send({data: res.locals.order})
 };
 
 exports.update = (req, res, next) => {
     const orderId = req.params.orderId;
-    //console.log(`dishId: ${dishId}, req.body.data.id: ${req.body.data.id}`)
-    //console.log(`${req.body.data.id !== dishId}`)
     if (!orderId) {
         next({status: 400});
     } else if (req.body.data.id && req.body.data.id !== orderId) {
@@ -107,14 +83,9 @@ exports.delete = (req, res, next) => {
     const order = res.locals.order
     if (order.status !== "pending") {
         next({status: 400, message: `pending: ${order}`});
-        //next({status: 400, message: order});
     } else {
-        //orders = orders.filter((order) => (order.id !== orderId && order.status !== "pending"));
-        //console.log(orders);
-        //console.log(order);
         const index = orders.findIndex(obj => obj.id === order.id);
         orders.splice(index, 1);
-        //console.log(orders);
         next({status: 204, message: `Deleted`});
     }
 };

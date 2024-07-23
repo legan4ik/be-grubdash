@@ -6,9 +6,6 @@ const dishes = require(path.resolve("src/data/dishes-data"));
 // Use this function to assign ID's when necessary
 const nextId = require("../utils/nextId");
 
-// TODO: Implement the /dishes handlers needed to make the tests pass
-
-//warning
 
 exports.dishExists = (req, res, next) => {
     const dishId = req.params.dishId;
@@ -53,14 +50,11 @@ exports.create = (req, res, next) => {
 };
 
 exports.read = (req, res, next) => {
-    //console.log(dish);
     res.send({data: res.locals.dishId})
 };
 
 exports.update = (req, res, next) => {
     const dishId = req.params.dishId;
-    //console.log(`dishId: ${dishId}, req.body.data.id: ${req.body.data.id}`)
-    //console.log(`${req.body.data.id !== dishId}`)
     if (!dishId) {
         next({status: 400});
     } else if (req.body.data.id && req.body.data.id !== dishId) {
