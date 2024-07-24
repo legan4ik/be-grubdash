@@ -6,12 +6,14 @@ const dishes = require(path.resolve("src/data/dishes-data"));
 // Use this function to assign ID's when necessary
 const nextId = require("../utils/nextId");
 
-
 exports.dishExists = (req, res, next) => {
     const dishId = req.params.dishId;
+    if (!dishId) {
+        next({status: 400});
+    }
     const dish = dishes.filter((dish) => dish.id === dishId);
     if (dish.length !== 0){
-        res.locals.dishId = dishId[0];
+        res.locals.dish = dish[0];
         next();
     } else {
         next({status: 404, message: `Dish does not exist: ${dishId}`});
@@ -19,6 +21,9 @@ exports.dishExists = (req, res, next) => {
 };
 
 exports.validate = (req, res, next) => {
+    if (!req.body || !req.body.data) {
+        next({status: 400, message: 'No data or body'});
+    }
     if (!req.body.data.name) {
         next({status: 400, message: "name"});
     }
@@ -34,10 +39,7 @@ exports.validate = (req, res, next) => {
     next();
 };
 
-exports.create = (req, res, next) => {
-    if (!req.body || !req.body.data) {
-        next({status: 403, message: `No data or body`});
-    }
+exports.create = (req, res) => {
     const dish = {
         id: nextId(),
         name: req.body.data.name,
@@ -49,27 +51,24 @@ exports.create = (req, res, next) => {
     res.status(201).send({data: dish})
 };
 
-exports.read = (req, res, next) => {
-    res.send({data: res.locals.dishId})
+exports.read = (req, res) => {
+    res.send({data: res.locals.dish})
 };
 
 exports.update = (req, res, next) => {
     const dishId = req.params.dishId;
-    if (!dishId) {
-        next({status: 400});
-    } else if (req.body.data.id && req.body.data.id !== dishId) {
+    if (req.body.data.id && req.body.data.id !== dishId) {
         next({status: 400, message: `Not found id ${req.body.data.id}`});
     } else {
-    const dish = res.locals.dishId;
-    dish['name'] = req.body.data.name;
-    dish['description'] = req.body.data.description;
-    dish['price'] = req.body.data.price;
-    dish['image_url'] = req.body.data.image_url;
-    res.send({data: dish});
-    next({status: 201, message: dish});
+        const dish = res.locals.dish;
+        dish['name'] = req.body.data.name;
+        dish['description'] = req.body.data.description;
+        dish['price'] = req.body.data.price;
+        dish['image_url'] = req.body.data.image_url;
+        res.status(200).send({data: dish})
     }
 };
 
-exports.list = (req, res, next) => {
+exports.list = (req, res) => {
     res.send({data: dishes});
 };

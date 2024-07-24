@@ -8,6 +8,9 @@ const nextId = require("../utils/nextId");
 
 exports.orderExists = (req, res, next) => {
     const orderId = req.params.orderId;
+    if (!orderId) {
+        next({status: 400});
+    }
     const order = orders.filter((order) => order.id === orderId);
     if (order.length !== 0){
         res.locals.order = order[0];
@@ -18,6 +21,9 @@ exports.orderExists = (req, res, next) => {
 };
 
 exports.validate = (req, res, next) => {
+    if (!req.body || !req.body.data) {
+        next({status: 403, message: 'No data or body'});
+    }
     if (!req.body.data.deliverTo) {
         next({status: 400, message: "deliverTo"});
     }
@@ -30,13 +36,11 @@ exports.validate = (req, res, next) => {
     const invalidDishes = req.body.data.dishes.filter((dish) => (!dish.quantity || dish.quantity === 0 || typeof dish.quantity !== 'number'));
     if (invalidDishes.length !== 0){
         next({status: 400, message: JSON.stringify(req.body.data.dishes)});
+    }
     next();
 };
 
-exports.create = (req, res, next) => {
-    if (!req.body || !req.body.data) {
-        next({status: 403, message: `No data or body`});
-    }
+exports.create = (req, res) => {
     const order = {
         id: nextId(),
         deliverTo: req.body.data.deliverTo,
@@ -48,15 +52,13 @@ exports.create = (req, res, next) => {
     res.status(201).send({data: order})
 };
 
-exports.read = (req, res, next) => {
+exports.read = (req, res) => {
     res.send({data: res.locals.order})
 };
 
 exports.update = (req, res, next) => {
     const orderId = req.params.orderId;
-    if (!orderId) {
-        next({status: 400});
-    } else if (req.body.data.id && req.body.data.id !== orderId) {
+    if (req.body.data.id && req.body.data.id !== orderId) {
         next({status: 400, message: `Not found id ${req.body.data.id}`});
     } else if (!req.body.data.status || req.body.data.status === "invalid") {
         next({status: 400, message: "status"});
@@ -69,13 +71,12 @@ exports.update = (req, res, next) => {
             order['mobileNumber'] = req.body.data.mobileNumber;
             order['dishes'] = req.body.data.dishes;
             order['status'] = req.body.data.status;
-            res.send({data: order});
-            next({status: 201, message: order});
+            res.status(200).send({data: order})
         }
     }
 };
 
-exports.list = (req, res, next) => {
+exports.list = (req, res) => {
     res.send({data: orders});
 };
 
